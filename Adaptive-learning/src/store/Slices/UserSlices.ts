@@ -1,56 +1,69 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { api } from "../../services/api";
 
-interface UserState {
-  user: any;
+interface AuthState {
+  accessToken: string;
+  refreshToken: string;
+  isAuthenticated: boolean;
   loading: boolean;
-  error: string | null;
+  userId: string;
 }
 
-// Initial State
-const initialState: UserState = {
-  user: null,
+const initialState: AuthState = {
+  accessToken: localStorage.getItem("accesstoken") ?? "",
+  refreshToken: localStorage.getItem("refreshtoken") ?? "",
+  isAuthenticated: Boolean(localStorage.getItem("token")),
   loading: false,
-  error: null,
+  userId: "",
 };
-
-// Async Thunk for User Registration
-export const registerUser = createAsyncThunk(
-  "user/register",
-  async (userData: { email: string; username: string; password: string }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post("https://api.example.com/register", userData);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || "Something went wrong");
-    }
-  }
-);
-
-const userSlice = createSlice({
-  name: "user",
+export const authSlice = createSlice({
+  name: "auth",
   initialState,
   reducers: {
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setTokens: (state, action: PayloadAction<{ accessToken: string }>) => {
+      localStorage.setItem("token", action.payload.accessToken);
+      state.accessToken = action.payload.accessToken;
+      state.isAuthenticated = true;
+    },
+    resetToken: (state) => {
+      localStorage.removeItem("token");
+      state.accessToken = "";
+      state.isAuthenticated = false;
+    },
     logout: (state) => {
-      state.user = null;
+      localStorage.removeItem("token");
+      state.accessToken = "";
+      state.isAuthenticated = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state) => {
+      .addMatcher(api.endpoints.login.matchPending, (state) => {
         state.loading = true;
-        state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addMatcher(api.endpoints.login.matchFulfilled, (state, action) => {
+        console.log(action)
+        localStorage.setItem("token", action.payload.data.accessToken);
+        state.accessToken = action.payload.data.accessToken;
+        state.isAuthenticated = true;
         state.loading = false;
-        state.user = action.payload;
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addMatcher(api.endpoints.login.matchRejected, (state) => {
+        state.accessToken = "";
+        state.isAuthenticated = false;
         state.loading = false;
-        state.error = action.payload as string;
+      })
+      .addMatcher(api.endpoints.logout.matchFulfilled, (state) => {
+        localStorage.removeItem("token");
+        state.accessToken = "";
+        state.isAuthenticated = false;
+        state.loading = false;
       });
   },
 });
 
-export const { logout } = userSlice.actions;
-export default userSlice.reducer;
+export const { setTokens, resetToken, setLoading } = authSlice.actions;
+export default authSlice.reducer;

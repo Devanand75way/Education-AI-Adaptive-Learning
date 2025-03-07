@@ -2,40 +2,55 @@ import React, { useState } from "react";
 import { Button, Typography, Box, TextField, IconButton, InputAdornment, FormControlLabel, Checkbox, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Hero-Section/Hero-section";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useLoginMutation } from "../../services/api";
 
 const MotionBox = motion(Box);
+type FormData = typeof schema.__outputType;
+
+
+const schema = yup.object().shape({
+  email: yup.string().email("Invalid email format").required("Email is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  rememberMe: yup.boolean(),
+});
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const formik = useFormik({
-    initialValues: {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
       email: "",
       password: "",
       rememberMe: false,
     },
-    validationSchema: Yup.object({
-      email: Yup.string().email("Invalid email format").required("Email is required"),
-      password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-      rememberMe: Yup.boolean(),
-    }),
-    onSubmit: (values) => {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        toast.success("Logged in Successfully!", { position: "top-center" });
-        navigate("/"); // Redirect after login
-      }, 2000);
-    },
   });
+  const [AuthUser] = useLoginMutation()
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    try {
+      await AuthUser(data).unwrap();
+      toast.success("Login Successful");
+      navigate("/");
+    } catch (error) {
+      toast.error("Registration failed");
+      console.error(error);
+    }
+    setLoading(false);
+  };
 
   return (
     <>
@@ -47,15 +62,15 @@ const LoginPage: React.FC = () => {
           </Box>
           <Box sx={{ flex: 1, padding: 4, display: "flex", flexDirection: "column", justifyContent: "center", border: "1px solid #ddd", borderRadius: "10px" }}>
             <Typography variant="h4" fontWeight="bold" textAlign="center">Login</Typography>
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <TextField 
                 fullWidth 
                 label="Email" 
                 variant="outlined" 
                 margin="normal" 
-                {...formik.getFieldProps("email")} 
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
+                {...register("email")} 
+                error={!!errors.email}
+                helperText={errors.email?.message}
               />
 
               <TextField 
@@ -64,9 +79,9 @@ const LoginPage: React.FC = () => {
                 type={showPassword ? "text" : "password"} 
                 variant="outlined" 
                 margin="normal" 
-                {...formik.getFieldProps("password")} 
-                error={formik.touched.password && Boolean(formik.errors.password)}
-                helperText={formik.touched.password && formik.errors.password}
+                {...register("password")} 
+                error={!!errors.password}
+                helperText={errors.password?.message}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -79,7 +94,7 @@ const LoginPage: React.FC = () => {
               />
 
               <FormControlLabel 
-                control={<Checkbox {...formik.getFieldProps("rememberMe")} />} 
+                control={<Checkbox {...register("rememberMe")} />} 
                 label="Remember Me" 
               />
 

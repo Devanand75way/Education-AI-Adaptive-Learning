@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Change this based on your database
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  username String
+  password String
+  role     String
+  courses  CourseEnrollment[]
+  videos   VideoWatch[]
+  quizzes  QuizAttempt[]
+}
+
+model Course {
+  id         String  @id @default(uuid())
+  name       String
+  instructor String
+  description String?
+  quizzes    Quiz[]
+  videos     Video[]
+  enrollments CourseEnrollment[]
+}
+
+model CourseEnrollment {
+  id        String  @id @default(uuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  String
+  enrolledAt DateTime @default(now())
+}
+
+model Video {
+  id        String  @id @default(uuid())
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  String
+  title     String
+  videoUrl  String
+  duration  Int
+  watchedBy VideoWatch[]
+}
+
+model VideoWatch {
+  id        String  @id @default(uuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  video     Video   @relation(fields: [videoId], references: [id])
+  videoId   String
+  watchedAt DateTime @default(now())
+}
+
+model Quiz {
+  id         String  @id @default(uuid())
+  course     Course  @relation(fields: [courseId], references: [id])
+  courseId   String
+  topicName  String
+  difficulty String
+  attempts   QuizAttempt[]
+  feedback   FeedbackReport[]
+}
+
+model FeedbackReport {
+  id                String  @id @default(uuid())
+  quizAttempt       QuizAttempt @relation(fields: [quizAttemptId], references: [id])
+  quizAttemptId     String @unique
+  quiz              Quiz @relation(fields: [quizId], references: [id])
+  quizId            String
+  timeSpent         Int
+  attempts          Int
+  difficultyNumeric Int
+  accuracy          Float
+  avgTimeSpent      Float
+  questionId        Int
+}
+
+
+model QuizAttempt {
+  id        String  @id @default(uuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  quiz      Quiz    @relation(fields: [quizId], references: [id])
+  quizId    String
+  attemptedAt DateTime @default(now())
+  feedback  FeedbackReport?
+}

@@ -2,42 +2,58 @@ import React, { useState } from "react";
 import { Button, Typography, Box, TextField, IconButton, InputAdornment, MenuItem, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Hero-Section/Hero-section";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useRegisterMutation } from "../../services/api";
+import * as yup from "yup";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const MotionBox = motion(Box);
+type FormData = typeof schema.__outputType;
+
+const schema = yup.object().shape({
+  username: yup.string().required("Username is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().min(4, "At least 4 characters required").required("Password is required"),
+  role: yup.string().required("Please select a role"),
+});
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false); // Added loading state
+  const [loading, setLoading] = useState(false);
+  const [FeedUser] = useRegisterMutation();
 
-  const formik = useFormik({
-    initialValues: {
-      email: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
       username: "",
+      email: "",
       password: "",
       role: "",
     },
-    validationSchema: Yup.object({
-      email: Yup.string().email("Invalid email format").required("Email is required"),
-      username: Yup.string().min(3, "Username must be at least 3 characters").required("Username is required"),
-      password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-      role: Yup.string().required("Please select a role"),
-    }),
-    onSubmit: (values) => {
-      setLoading(true); // Start loading
-      setTimeout(() => {
-        setLoading(false); // Stop loading
-        toast.success("Registered Successfully!");
-        console.log("Form Submitted", values);
-      }, 2000); 
-    },
+    resolver: yupResolver(schema),
   });
+
+  const onSubmit = async (data: FormData) => {
+    console.log(data)
+    setLoading(true);
+    try {
+      await FeedUser(data).unwrap();
+      toast.success("User Registered");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Registration failed");
+      console.error(error);
+    }
+    setLoading(false);
+  };
 
   return (
     <>
@@ -52,24 +68,24 @@ const RegisterPage: React.FC = () => {
             <Typography variant="h4" fontWeight="bold" color="#FF6B00" textAlign="center">
               Register
             </Typography>
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <TextField
                 fullWidth
                 label="Email"
                 variant="outlined"
                 margin="normal"
-                {...formik.getFieldProps("email")}
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
+                {...register("email")}
+                error={!!errors.email}
+                helperText={errors.email?.message}
               />
               <TextField
                 fullWidth
                 label="Username"
                 variant="outlined"
                 margin="normal"
-                {...formik.getFieldProps("username")}
-                error={formik.touched.username && Boolean(formik.errors.username)}
-                helperText={formik.touched.username && formik.errors.username}
+                {...register("username")}
+                error={!!errors.username}
+                helperText={errors.username?.message}
               />
               <TextField
                 fullWidth
@@ -77,9 +93,9 @@ const RegisterPage: React.FC = () => {
                 label="Select Role"
                 variant="outlined"
                 margin="normal"
-                {...formik.getFieldProps("role")}
-                error={formik.touched.role && Boolean(formik.errors.role)}
-                helperText={formik.touched.role && formik.errors.role}
+                {...register("role")}
+                error={!!errors.role}
+                helperText={errors.role?.message}
               >
                 <MenuItem value="Student">Student</MenuItem>
                 <MenuItem value="Teacher">Teacher</MenuItem>
@@ -90,14 +106,14 @@ const RegisterPage: React.FC = () => {
                 type={showPassword ? "text" : "password"}
                 variant="outlined"
                 margin="normal"
-                {...formik.getFieldProps("password")}
-                error={formik.touched.password && Boolean(formik.errors.password)}
-                helperText={formik.touched.password && formik.errors.password}
+                {...register("password")}
+                error={!!errors.password}
+                helperText={errors.password?.message}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowPassword(!showPassword)}>
-                        {!showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                        {showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -107,10 +123,7 @@ const RegisterPage: React.FC = () => {
                 {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Register"}
               </Button>
               <Typography variant="body2" textAlign="center" sx={{ marginTop: 2 }}>
-                Already have an account?{" "}
-                <Button onClick={() => navigate("/login")} sx={{ color: "#FF6B00" }}>
-                  Login
-                </Button>
+                Already have an account? <Button onClick={() => navigate("/auth")} sx={{ color: "#FF6B00" }}>Login</Button>
               </Typography>
             </form>
           </Box>

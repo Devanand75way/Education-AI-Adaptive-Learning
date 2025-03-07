@@ -1,5 +1,5 @@
 import React from "react";
-import { AppBar, Toolbar, Button, Typography, Container, Box, Card, CardContent, TextField, IconButton } from "@mui/material";
+import { AppBar, Toolbar, Button, Typography, Container, Box, Card, CardContent, TextField, IconButton, Avatar, Menu, MenuItem } from "@mui/material";
 import { motion } from "framer-motion";
 import { RiBillFill } from "react-icons/ri";
 import { SlCalender } from "react-icons/sl";
@@ -8,27 +8,59 @@ import { AiOutlineCheckCircle , AiOutlineMail} from "react-icons/ai";
 import { MdOutlineIntegrationInstructions } from "react-icons/md";
 import { FaBrain } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../store/store";
 
 const MotionBox = motion(Box);
 
 export const Navbar: React.FC = () => {
-     const naviagate = useNavigate()
+     const navigate = useNavigate();
+     const isAuthenticated = useAppSelector((state) => state.auth)
+     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+   
+     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+       setAnchorEl(event.currentTarget);
+     };
+   
+     const handleMenuClose = () => {
+       setAnchorEl(null);
+     };
+   
+     const handleLogout = () => {
+       // Implement logout functionality
+       console.log("User Logged Out");
+       handleMenuClose();
+     };
      return (
-       <AppBar position="absolute" color="transparent" elevation={0}>
-         <Toolbar sx={{ display: "flex", justifyContent: "space-between", padding: 0 }}>
-           <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>Skilline</Typography>
-           <Box>
-             <Button onClick={() => naviagate("/")} color="inherit">Home</Button>
-             <Button onClick={() => naviagate("/courses")} color="inherit">Courses</Button>
-             <Button color="inherit">Careers</Button>
-             <Button color="inherit">About Us</Button>
-             <Button onClick={() => naviagate("/login")} sx={{ color: "#000", marginRight: 1 }}>Login</Button>
-             <Button onClick={() => naviagate("/register")} variant="contained" sx={{ bgcolor: "#FF6B00", borderRadius: 5 }}>Sign Up</Button>
-           </Box>
-         </Toolbar>
-       </AppBar>
+      <AppBar position="absolute" color="transparent" elevation={0}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between", padding: 0 }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>Skilline</Typography>
+        <Box>
+          <Button onClick={() => navigate("/")} color="inherit">Home</Button>
+          <Button onClick={() => navigate("/courses")} color="inherit">Courses</Button>
+          <Button color="inherit">Careers</Button>
+          <Button color="inherit">About Us</Button>
+
+          {isAuthenticated ? (
+            <>
+              <IconButton onClick={handleMenuOpen} sx={{ ml: 2 }}>
+                <Avatar alt="User Profile" src="/profile.jpg" />
+              </IconButton>
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                <MenuItem onClick={() => navigate("/view-profile")}>Profile</MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => navigate("/login")} sx={{ color: "#000", marginRight: 1 }}>Login</Button>
+              <Button onClick={() => navigate("/register")} variant="contained" sx={{ bgcolor: "#FF6B00", borderRadius: 5 }}>Sign Up</Button>
+            </>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
      );
-   };
+};
    
 const HeroSection: React.FC = () => {
   return (
