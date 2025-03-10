@@ -82,7 +82,7 @@ model FeedbackReport {
   difficultyNumeric Int
   accuracy          Float
   avgTimeSpent      Float
-  questionId        Int
+  // questionId        Int
 }
 
 

@@ -1,56 +1,49 @@
 from flask import Flask, request, jsonify
 import pickle
 import pandas as pd
-from collections import Counter
+from flask_cors import CORS 
 
 app = Flask(__name__)
+CORS(app)  
 
-# Load Trained Model
+
 model = pickle.load(open("Trained_modal/student_model.pkl", "rb"))
 
-# Sample Data (Agar tumhare pass database hai toh waha se le sakte ho)
-questions_data = [
-    {"question": "Algebra Basics", "topic": "Algebra", "difficulty": 2},
-    {"question": "Pythagoras Theorem", "topic": "Geometry", "difficulty": 3},
-    {"question": "Simple Interest", "topic": "Finance", "difficulty": 1},
-    {"question": "Trigonometry", "topic": "Geometry", "difficulty": 3},
-    {"question": "Quadratic Equations", "topic": "Algebra", "difficulty": 2},
-]
 
-# API Route for Prediction & Feedback
 @app.route('/predict_feedback', methods=['POST'])
 def predict_feedback():
     try:
         data = request.get_json()
 
-        # Convert JSON to DataFrame
-        df = pd.DataFrame([data])
+        X = pd.DataFrame([data], columns=["Time_Spent", "Attempts", "Difficulty_Numeric", "Accuracy", "Avg_Time_Spent"])
 
-        # Features Selection
-        X = df[["Time_Spent", "Attempts", "Difficulty_Numeric", "Accuracy", "Avg_Time_Spent"]]
+        # Predict Feedback based on model prediction and accuracy level
+        prediction = model.predict(X)[0]
+        result = int(prediction)
 
-        # Predict Answer Correct or Incorrect
-        prediction = model.predict(X)
-        result = int(prediction[0])  # Convert NumPy output to integer
+       
+        topic = data.get("topic_name", "").capitalize()  # Ensure topic formatting
+        accuracy = data.get("Accuracy", 0.0)  # Get Accuracy value
 
-        # Identify Weak Topics (Assume Data Contains Question ID)
-        question_index = data["question_id"]  # Assume question_id is sent from frontend
-        question_data = questions_data[question_index]
-        topic = question_data["topic"]
-
-        # If Incorrect, Track Weak Topic
+        # Initialize feedback and weak topics
         feedback = "Good Job! Keep Going!"
         weak_topics = []
 
-        if result == 0:  # Student made an error
+        # If Accuracy < 50% or Prediction is Incorrect, add topic to weak areas
+        if accuracy < 50.0 or result == 0:
             feedback = f"You need to improve on {topic}."
             weak_topics.append(topic)
 
-        return jsonify({"prediction": result, "feedback": feedback, "weak_topics": weak_topics})
+        return jsonify({
+            "prediction": result,
+            "feedback": feedback,
+            "weak_topics": weak_topics,
+            "accuracy": accuracy 
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)})
 
 # Run Flask App
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=False)

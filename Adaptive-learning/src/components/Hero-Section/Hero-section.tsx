@@ -9,27 +9,40 @@ import { MdOutlineIntegrationInstructions } from "react-icons/md";
 import { FaBrain } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../store/store";
+import { useLogoutMutation } from "../../services/api";
+import { logout } from "../../store/Slices/UserSlices";
+import { useDispatch } from "react-redux";
 
 const MotionBox = motion(Box);
 
 export const Navbar: React.FC = () => {
      const navigate = useNavigate();
-     const isAuthenticated = useAppSelector((state) => state.auth)
+     const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
      const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-   
+     const dispatch = useDispatch();   
      const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
        setAnchorEl(event.currentTarget);
      };
-   
+
      const handleMenuClose = () => {
        setAnchorEl(null);
+     }
+     
+     const [Logout] = useLogoutMutation();
+
+     const handleLogout = async () => {
+      try {
+        await Logout().unwrap();
+        navigate("/auth");
+        dispatch(logout())
+        alert("Logged out successfully");
+        handleMenuClose();
+      } catch (error) {
+        console.log(error)
+      }
      };
-   
-     const handleLogout = () => {
-       // Implement logout functionality
-       console.log("User Logged Out");
-       handleMenuClose();
-     };
+
+
      return (
       <AppBar position="absolute" color="transparent" elevation={0}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", padding: 0 }}>
@@ -52,7 +65,7 @@ export const Navbar: React.FC = () => {
             </>
           ) : (
             <>
-              <Button onClick={() => navigate("/login")} sx={{ color: "#000", marginRight: 1 }}>Login</Button>
+              <Button onClick={() => navigate("/auth")} sx={{ color: "#000", marginRight: 1 }}>Login</Button>
               <Button onClick={() => navigate("/register")} variant="contained" sx={{ bgcolor: "#FF6B00", borderRadius: 5 }}>Sign Up</Button>
             </>
           )}

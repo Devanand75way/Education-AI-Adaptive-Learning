@@ -7,4 +7,5 @@ export interface IFeedbackReport {
      accuracy:number;
      avgTimeSpent: number;
      questionId:number;
+     topic: string
 }

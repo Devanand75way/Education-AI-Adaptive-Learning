@@ -47,7 +47,7 @@ const RegisterPage: React.FC = () => {
     try {
       await FeedUser(data).unwrap();
       toast.success("User Registered");
-      navigate("/login");
+      navigate("/auth");
     } catch (error) {
       toast.error("Registration failed");
       console.error(error);

@@ -7,4 +7,9 @@ export const createFeedbackReport = async (req: Request, res: Response) => {
     res.send(CreateResponse(report, "feedbackReport created successfully"));
 };
 
-
+export const getFeedBackReport = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    console.log("userId", userId);
+    const reports = await feedbackreport.getFeedBackReport(userId);
+    res.send(CreateResponse(reports, "feedbackReport retrieved successfully"));
+}

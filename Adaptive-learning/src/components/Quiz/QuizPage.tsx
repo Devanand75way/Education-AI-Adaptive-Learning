@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -10,6 +10,9 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { Navbar } from "../Hero-Section/Hero-section";
+import {useParams } from "react-router-dom";
+import { useAppSelector } from "../../store/store";
+import { useAttemptQuizMutation, useSubmitFeedbackReportMutation } from "../../services/api";
 
 // Questions Array
 const questions = [
@@ -28,6 +31,16 @@ const questions = [
     options: ["11", "16", "10", "15"],
     answer: "11",
   },
+  {
+    question: "Who invented the telephone?",
+    options: ["Alexander Graham Bell", "George Washington", "John Watson", "Richard Feynman"],
+    answer: "Alexander Graham Bell",
+  },
+  {
+    question: "Who was the first woman to climb Mount Everest without supplemental oxygen?",
+    options: ["Mary Poppins", "Marie Antoinette", "Isabella of Castile", "Sophie Germain"],
+    answer: "Mary Poppins",
+  }
 ];
 
 export default function QuizPage() {
@@ -36,8 +49,48 @@ export default function QuizPage() {
   const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [quizAttemptId, setQuizAttemptId] = useState("");
 
-  const handleNext = () => {
+  const {quizId} = useParams()
+  const  userId = useAppSelector((state) => state.auth.userId);
+  const [feedAttemptQuiz] = useAttemptQuizMutation();
+  const [feedStudentReport ] = useSubmitFeedbackReportMutation();
+  const data  = {userId : userId , quizId : quizId || ""}
+
+  const handleRestart = async () => {
+    try {
+      if (quizId) {
+        const result = await feedAttemptQuiz(data);
+        console.log("Quiz Attempt: " , result)
+        const attemptId = result.data?.data?.id; 
+  
+        if (!attemptId) {
+          console.error("Quiz Attempt ID not received!");
+          return;
+        }
+        setQuizAttemptId(attemptId); 
+        const studentReport = {
+          quizAttemptId: attemptId,
+          quizId: quizId,
+          timeSpent: 120,
+          attempts: 1,
+          difficultyNumeric: 4,
+          accuracy: parseFloat(((score / questions.length) * 100).toFixed(2)), 
+          avgTimeSpent: 45.7,
+        };
+  
+        await feedStudentReport(studentReport);
+        console.log("Feedback Report submitted successfully!");
+  
+        alert("Quiz Completed!");
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error("Error in handleRestart:", error);
+    }
+  };
+
+  const handleNext = async () => {
     if (selectedOption === questions[currentQuestion].answer) {
       setScore(score + 1);
     }
@@ -46,6 +99,7 @@ export default function QuizPage() {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedOption("");
       setProgress(((currentQuestion + 1) / questions.length) * 100);
+      
     } else {
       setIsCompleted(true);
     }
@@ -82,7 +136,7 @@ export default function QuizPage() {
           <LinearProgress variant="determinate" value={progress} sx={{ my: 2 }} />
 
           {isCompleted ? (
-            // ✅ Feedback Page After Completion
+            //  Feedback Page After Completion
             <motion.div
               initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -101,22 +155,18 @@ export default function QuizPage() {
                   ? "Good Job! Keep Practicing. 💪"
                   : "Don't worry! Try again and improve. 😊"}
               </Typography>
-              <motion.img
-                src="https://cdn.dribbble.com/users/1233499/screenshots/4632952/media/9e281fcd0176894a8a7fbb56ebecbfa3.gif"
-                alt="Success Animation"
-                style={{ width: "100%", marginTop: "20px", borderRadius: "10px" }}
-              />
               <Button
                 variant="contained"
                 color="primary"
                 sx={{ mt: 3 }}
-                onClick={() => window.location.reload()}
+                onClick={handleRestart}
               >
                 Restart Quiz 🔄
               </Button>
+            
             </motion.div>
           ) : (
-            // ✅ Quiz Questions Component
+            // Quiz Questions Component
             <motion.div
               key={currentQuestion}
               initial={{ opacity: 0, x: -50 }}
@@ -135,7 +185,7 @@ export default function QuizPage() {
             </motion.div>
           )}
 
-          {/* ✅ Buttons Section */}
+          {/* Buttons Section */}
           {!isCompleted && (
             <Box display="flex" justifyContent="space-between" mt={3}>
               <Button

@@ -4,17 +4,17 @@ import { Footer } from "../Hero-Section/Hero-section";
 import { useNavigate } from "react-router-dom";
 
 const courses = [
-  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" },
-  { title: "AWS Certified Solutions Architect", image: "/Courses/cloud1.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" },
-  { title: "AWS Certified Solutions Architect", image: "/Courses/block.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" },
-  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" }
+  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100" },
+  { title: "AWS Certified Solutions Architect", image: "/Courses/cloud1.webp", instructor: "Lina", oldPrice: "$100" },
+  { title: "AWS Certified Solutions Architect", image: "/Courses/block.webp", instructor: "Lina", oldPrice: "$100" },
+  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100" }
 ];
 
 const Choices_courses = [
-  { title: "AWS Certified Solutions Architect", image: "/Courses/block.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" },
-  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" },
-  { title: "AWS Certified Solutions Architect", image: "/Courses/cloud1.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" },
-  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100", newPrice: "$80" }
+  { title: "AWS Certified Solutions Architect", image: "/Courses/block.webp", instructor: "Lina", oldPrice: "$100" },
+  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100" },
+  { title: "AWS Certified Solutions Architect", image: "/Courses/cloud1.webp", instructor: "Lina", oldPrice: "$100" },
+  { title: "AWS Certified Solutions Architect", image: "/Courses/child.webp", instructor: "Lina", oldPrice: "$100" }
 ];
 
 export interface Course {

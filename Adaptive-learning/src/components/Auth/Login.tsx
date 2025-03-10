@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useLoginMutation } from "../../services/api";
+import { useAppSelector } from "../../store/store";
 
 const MotionBox = motion(Box);
 type FormData = typeof schema.__outputType;
@@ -39,6 +40,8 @@ const LoginPage: React.FC = () => {
     },
   });
   const [AuthUser] = useLoginMutation()
+   const { isAuthenticated } = useAppSelector((state) => state.auth);
+   console.log(isAuthenticated);
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {

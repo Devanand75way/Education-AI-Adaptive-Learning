@@ -7,5 +7,7 @@ const router = Router();
 router
     .post('/', uservalidator, catchError, usercontroller.create)
     .post('/auth',loginvalidator, catchError, usercontroller.login)
+    .get('/:userId', usercontroller.getEnrolledCourses)
+    .post('/logout', usercontroller.logoutUser);
 
 export default router;

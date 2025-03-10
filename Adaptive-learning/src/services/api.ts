@@ -37,7 +37,7 @@ export const api = createApi({
       }),
     }),
     login: builder.mutation<
-      ApiResponse<{ accessToken: string; refreshToken: string; id: number }>,
+      ApiResponse<{ accessToken: string; refreshToken: string; userId: string }>,
       { email: string; password: string }
     >({
       query: (body) => ({
@@ -104,7 +104,7 @@ export const api = createApi({
     // Quizzes
     createQuiz: builder.mutation<Quiz, Partial<Quiz>>({
       query: (body) => ({
-        url: "/quizzes",
+        url: "/quiz/",
         method: "POST",
         body,
       }),
@@ -116,7 +116,7 @@ export const api = createApi({
     // Quiz Attempt
     attemptQuiz: builder.mutation<QuizAttempt, { userId: string; quizId: string }>({
       query: (body) => ({
-        url: "/quiz-attempts",
+        url: "/quiz-attempt/",
         method: "POST",
         body,
       }),
@@ -128,13 +128,20 @@ export const api = createApi({
     // Feedback Report
     submitFeedbackReport: builder.mutation<FeedbackReport, Partial<FeedbackReport>>({
       query: (body) => ({
-        url: "/feedback-reports",
+        url: "/feedback-report/user-feedback",
         method: "POST",
         body,
       }),
     }),
-    getFeedbackReports: builder.query<FeedbackReport[], void>({
-      query: () => "/feedback-reports",
+    getFeedbackReports: builder.query<FeedbackReport[], {userId : string}>({
+      query: ({userId}) => `/feedback-report//${userId}`,
+    }),
+    getModalFeedbackReports: builder.mutation<FeedbackReport[], void>({
+      query: (body) => ({
+          url : `http://127.0.0.1:5000/predict_feedback`,
+          method : "POST",
+          body,
+      })
     }),
   }),
 });
@@ -164,4 +171,5 @@ export const {
 
   useSubmitFeedbackReportMutation,
   useGetFeedbackReportsQuery,
+ useGetModalFeedbackReportsMutation
 } = api;

@@ -44,5 +44,23 @@ export const login = async (data: IUser) => {
      if (!isMatch) throw new Error("Invalid email or password");
      const accessToken = generateAccessToken({ userid: user.id, email: user.email });
      const refreshToken = generateRefreshToken({ userid: user.id, email: user.email });
-     return { accessToken, refreshToken };
+     return { accessToken, refreshToken , userId : user.id};
 }
+
+export const getEnrolledCourses = async (userId: string) => {
+  const enrolledCourses = await prisma.courseEnrollment.findMany({
+    where: {
+      userId: userId,
+    },
+    include: {
+      course: {
+        select: {
+          name: true,           
+          instructor: true,     
+        },
+      },
+    },
+  });
+
+  return enrolledCourses;
+};

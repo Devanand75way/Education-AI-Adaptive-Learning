@@ -14,7 +14,7 @@ const initialState: AuthState = {
   refreshToken: localStorage.getItem("refreshtoken") ?? "",
   isAuthenticated: Boolean(localStorage.getItem("token")),
   loading: false,
-  userId: "",
+  userId: localStorage.getItem("userId") ?? "",
 };
 export const authSlice = createSlice({
   name: "auth",
@@ -45,9 +45,10 @@ export const authSlice = createSlice({
         state.loading = true;
       })
       .addMatcher(api.endpoints.login.matchFulfilled, (state, action) => {
-        console.log(action)
         localStorage.setItem("token", action.payload.data.accessToken);
+        localStorage.setItem("userId", action.payload.data.userId); 
         state.accessToken = action.payload.data.accessToken;
+        state.userId = action.payload.data.userId;
         state.isAuthenticated = true;
         state.loading = false;
       })
@@ -58,6 +59,7 @@ export const authSlice = createSlice({
       })
       .addMatcher(api.endpoints.logout.matchFulfilled, (state) => {
         localStorage.removeItem("token");
+        localStorage.removeItem('userId');
         state.accessToken = "";
         state.isAuthenticated = false;
         state.loading = false;
@@ -65,5 +67,5 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setTokens, resetToken, setLoading } = authSlice.actions;
+export const { setTokens, resetToken, setLoading , logout} = authSlice.actions;
 export default authSlice.reducer;
