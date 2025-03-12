@@ -49,9 +49,9 @@ export const Navbar: React.FC = () => {
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>Skilline</Typography>
         <Box>
           <Button onClick={() => navigate("/")} color="inherit">Home</Button>
-          <Button onClick={() => navigate("/courses")} color="inherit">Courses</Button>
-          <Button color="inherit">Careers</Button>
-          <Button color="inherit">About Us</Button>
+          <Button onClick={() => navigate("/courses")} color="inherit">Learn</Button>
+          <Button onClick={() => navigate("/simplify-topics")} color="inherit">Simplify</Button>
+          <Button onClick={() => navigate("/code-practice")} color="inherit">Code Practice</Button>
 
           {isAuthenticated ? (
             <>

@@ -3,11 +3,12 @@ import { Container, Typography, Card, CardContent, CardMedia, LinearProgress, Gr
 import { motion } from "framer-motion";
 import { Navbar } from "../Hero-Section/Hero-section";
 import CourseSection from "./Courses-section"
+import { useNavigate } from "react-router-dom";
 
 // Sample Data
 const lessons = [
   { title: "React Basics", image: "/Courses/react.webp", progress: 80 },
-  { title: "JavaScript Advanced", image: "/Courses/js.png", progress: 60 },
+  { title: "Learn Java ", image: "/Java-Logo.png", progress: 60 },
   { title: "Node.js Fundamentals", image: "/Courses/node.png", progress: 90 },
 ];
 
@@ -23,6 +24,9 @@ const favCourses = [
 ];
 
 const Courses: React.FC = () => {
+
+  const navigate = useNavigate();
+
   // Memoized Styles for Cards
   const cardStyles = useMemo(
     () => ({
@@ -53,7 +57,7 @@ const Courses: React.FC = () => {
             {lessons.map((lesson, index) => (
               <Grid item xs={12} md={4} key={index}>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <Card sx={cardStyles}>
+                  <Card sx={cardStyles} onClick={() => navigate("/learning-class")}>
                     <CardMedia component="img" height="160" image={lesson.image} alt={lesson.title} />
                     <CardContent>
                       <Typography variant="h6">{lesson.title}</Typography>

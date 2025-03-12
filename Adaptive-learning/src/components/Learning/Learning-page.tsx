@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Drawer,
@@ -7,57 +7,15 @@ import {
   ListItemText,
   Typography,
   Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
+  CircularProgress,
   Modal,
-  Backdrop,
-  Fade,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { Navbar } from "../Hero-Section/Hero-section";
-import { IoBookSharp } from "react-icons/io5";
 import { SiTestcafe } from "react-icons/si";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useCreateQuizMutation } from "../../services/api";
-
-interface Lesson {
-  title: string;
-  videoId: string;
-  part: string;
-}
-
-interface Quiz {
-  title: string;
-  topic: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-}
-
-const lessons: Lesson[] = [
-  { title: "Algebra Basics", videoId: "UVF8Kw5J1Jw", part: "Part 1" },
-  { title: "Quadratic Equations", videoId: "s_S4J2vArUE", part: "Part 1" },
-  { title: "Trigonometry Basics", videoId: "6BFBHmQ_Kec", part: "Part 1" },
-  { title: "Probability & Statistics", videoId: "XlD-OGG7bgM", part: "Part 1" },
-  { title: "Geometry - Circles", videoId: "91D__gQVr5M", part: "Part 1" },
-  { title: "Calculus - Derivatives", videoId: "PAONXliaxag", part: "Part 2" },
-  { title: "Calculus - Integrals", videoId: "9tMBIT-O77o", part: "Part 2" },
-  { title: "Vectors and Matrices", videoId: "UVF8Kw5J1Jw", part: "Part 2" },
-  { title: "Linear Algebra - Eigenvalues", videoId: "PFDu9oVAE-g", part: "Part 2" },
-  { title: "Number Theory Basics", videoId: "q-ygrZVuikY", part: "Part 2" },
-];
-
-const quizzes: Quiz[] = [
-  { title: "Algebra Quiz", topic: "algebra", difficulty: "Easy" },
-  { title: "Quadratic Quiz", topic: "quadratic", difficulty: "Medium" },
-  { title: "Calculus Quiz", topic: "calculus", difficulty: "Hard" },
-  { title: "Trigonometry Quiz", topic: "trigonometry", difficulty: "Easy" },
-  { title: "Statistics Quiz", topic: "statistics", difficulty: "Medium" },
-  { title: "Geometry Quiz", topic: "geometry", difficulty: "Hard" },
-  { title: "Vectors Quiz", topic: "vectors", difficulty: "Easy" },
-  { title: "Number Theory Quiz", topic: "number-theory", difficulty: "Medium" },
-];
 
 const getRandomColor = () => {
   const colors = ["#3357FF"];
@@ -66,36 +24,54 @@ const getRandomColor = () => {
 
 export default function LearningPage() {
   const navigate = useNavigate();
-  const [selectedVideo, setSelectedVideo] = useState(lessons[0].videoId);
+  const [selectedContent, setSelectedContent] = useState(null);
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [quizTopic, setQuizTopic] = useState("");
-  const [quizDifficulty, setQuizDifficulty] = useState("");
+  const [simplifiedText, setSimplifiedText] = useState("");
 
-  const [AddQuiz] = useCreateQuizMutation();
+  useEffect(() => {
+    fetchTopics();
+  }, []);
 
-  // Handle quiz click to open modal
- const handleQuizClick = (topic: string, difficulty: string): void => {
-    setQuizTopic(topic);
-    setQuizDifficulty(difficulty);
-    setModalOpen(true);
+  const fetchTopics = async () => {
+    try {
+      const result = await axios.get("http://localhost:5001/api/topic/");
+      setTopics(result.data.data);
+    } catch (error) {
+      console.error("Error fetching topics", error);
+    }
   };
 
-  const courseId = "0d22bcef-3187-440c-ad5d-eb4f9db724ad";
-  const confirmQuizAttempt = async () => {
+  const simplifyContent = async () => {
+    const selectedText = window.getSelection().toString().trim();
+    
+    if (!selectedText) {
+      alert("Please select some text to simplify!");
+      return;
+    }
+
+    setLoading(true);
+    setModalOpen(true);
+    setSimplifiedText(""); // Clear previous data
+
     try {
-      setModalOpen(false);
-      const result = await AddQuiz({courseId: courseId, topicName: quizTopic, difficulty: quizDifficulty})
-      const quizId = result.data?.data?.id;
-      navigate(`/quiz/${quizTopic}/${quizDifficulty}/${quizId}`);
+      const response = await axios.post("http://127.0.0.1:5001/api/text-classification/simplify", {
+        text: selectedText,
+      });
+      console.log(response.data.simplifiedText);
+      setSimplifiedText(response.data.simplifiedText);
     } catch (error) {
-      alert("An error occurred");
+      setSimplifiedText("Error fetching explanation. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
       <Navbar />
-      <Grid container sx={{ height: "100vh", width: "100vw", bgcolor: "#f5f5f5" }}>
+      <Grid container sx={{ height: "100vh", width: "100vw" }}>
         {/* Sidebar */}
         <Grid item xs={3} sx={{ color: "white" }}>
           <Drawer
@@ -113,36 +89,24 @@ export default function LearningPage() {
             }}
           >
             <Typography variant="h6" fontWeight="bold" mb={2}>
-              📖 Lessons - Part 1
+              Quiz Topics
             </Typography>
             <List>
-              {lessons
-                .filter((lesson) => lesson.part === "Part 1")
-                .map((lesson, index) => (
-                  <motion.div key={index} whileHover={{ scale: 1.05 }}>
-                    <ListItem button onClick={() => setSelectedVideo(lesson.videoId)}>
-                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: getRandomColor(), mr: 1.5 }} />
-                      <IoBookSharp />
-                      <ListItemText primaryTypographyProps={{ fontSize: "12px" }} sx={{ ml: 1 }}>
-                        {lesson.title}
-                      </ListItemText>
-                    </ListItem>
-                  </motion.div>
-                ))}
-            </List>
-
-            {/* Quiz Section */}
-            <Typography variant="h6" fontWeight="bold" mt={3} mb={2}>
-              Quiz
-            </Typography>
-            <List>
-              {quizzes.map((quiz, index) => (
+              {topics.map((topic, index) => (
                 <motion.div key={index} whileHover={{ scale: 1.05 }}>
-                  <ListItem button onClick={() => handleQuizClick(quiz.topic, quiz.difficulty)}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: getRandomColor(), mr: 1.5 }} />
+                  <ListItem button onClick={() => setSelectedContent(topic.content)}>
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: getRandomColor(),
+                        mr: 1.5,
+                      }}
+                    />
                     <SiTestcafe />
                     <ListItemText sx={{ ml: 1 }} primaryTypographyProps={{ fontSize: "12px" }}>
-                      {quiz.title} - {quiz.difficulty}
+                      {topic.title}
                     </ListItemText>
                   </ListItem>
                 </motion.div>
@@ -151,68 +115,74 @@ export default function LearningPage() {
           </Drawer>
         </Grid>
 
-        {/* Main Video Section */}
+        {/* Main Content Section */}
         <Grid item xs={9} display="flex" justifyContent="center" alignItems="start" mt={10}>
-          <Box sx={{ width: "90%", height: "80%", boxShadow: 3, borderRadius: 2, overflow: "hidden" }}>
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${selectedVideo}`}
-              title="YouTube Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+          <Box sx={{ borderRadius: 2, overflow: "hidden", p: 3 }}>
+            {selectedContent ? (
+              <Box>
+                <div dangerouslySetInnerHTML={{ __html: selectedContent }} />
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{
+                    position: "fixed",
+                    right: "5%",
+                    top: "15%",
+                    transform: "translateY(-50%)",
+                  }}
+                  onClick={simplifyContent}
+                >
+                  Simplify ✨
+                </Button>
+              </Box>
+            ) : (
+              <Typography variant="h6" color="gray" textAlign="center">
+                Select a topic to view details
+              </Typography>
+            )}
           </Box>
         </Grid>
-      </Grid>
 
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{ timeout: 500 }}
-      >
-        <Fade in={modalOpen}>
-          <Box
-            sx={{
+        {/* Modal for Simplified Explanation */}
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
               position: "absolute",
-              top: "50%",
-              left: "50%",
+              top: "10%",
+              left: "30%",
               transform: "translate(-50%, -50%)",
-              width: 500,
-              bgcolor: "white",
-              boxShadow: 24,
-              borderRadius: 2,
-              p: 3,
-              textAlign: "center",
+              background: "#fff",
+              padding: "20px",
+              borderRadius: "10px",
+              width: "600px",
+              boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
             }}
           >
-            <Typography variant="h6" fontWeight="bold">
-              Attempt Quiz
+            <Typography variant="h6" gutterBottom>
+              Simplified Explanation
             </Typography>
-            <Typography variant="body2" mt={1} mb={2}>
-              Are you sure you want to attempt this quiz?
-            </Typography>
+            {loading ? (
+              <Box display="flex" justifyContent="center" alignItems="center">
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Typography variant="body1">{simplifiedText}</Typography>
+            )}
             <Button
               variant="contained"
               color="primary"
-              sx={{ mr: 1 }}
-              onClick={confirmQuizAttempt}
-            >
-              Yes, Start
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
               onClick={() => setModalOpen(false)}
+              sx={{ mt: 2 }}
             >
-              Cancel
+              Close
             </Button>
-          </Box>
-        </Fade>
-      </Modal>
+          </motion.div>
+        </Modal>
+      </Grid>
     </>
   );
 }

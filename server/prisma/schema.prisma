@@ -95,3 +95,10 @@ model QuizAttempt {
   attemptedAt DateTime @default(now())
   feedback  FeedbackReport?
 }
+
+model Topic {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  content   String
+  createdAt DateTime @default(now())
+}
