@@ -6,33 +6,42 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const create = async (data: IUser) => {
-  const { username, email, password , role } = data;
-  
-  let user = await prisma.user.findFirst({
-    where: {
-      email: email.toString(),
-    },
-  });
-  if (user) {
-    return ("User already exists");
-  }
-  user = await prisma.user.create({
-    data: {
-      username : username,
-      email: email.toString(),
-      password: hashSync(password.toString(), 10), 
-      role  : role,
-    },
-  });
-  // if(user){
-  //   sender.sendMail({
-  //     from : "sender.example@example.com",
-  //     to : String(email),
-  //     subject : "Welcome to our website",
-  //     text : `Hello ${name},\n\nWelcome to our website! Your account has been created successfully. Your login credentials are as follows:\nEmail: ${email}\nPassword: ${password}\n\nThank you for joining us.\n\nBest regards,\nYour website team`
-  //   })
-  // }
-  return user;
+  const { username, email, password, role } = data;
+    let existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return { error: "User already exists" };
+    }
+
+    const newUser = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashSync(password, 10),
+        role,
+        learningTrack: {
+          create: {
+            totalAttempts: 0,
+            correctAnswers: 0,
+            accuracy: 0.0,
+            lastDifficultyLabel: 0,
+            topicJavaBasics: 0,
+            topicJavaCollections: 0,
+            topicJavaExceptions: 0,
+            topicJavaMultithreading: 0,
+            topicJavaOOP: 0,
+            javaBasics: 0.5,
+            javaOOP: 0.5,
+            javaMultithreading: 0.5,
+            javaExceptions: 0.5,
+            javaCollections: 0.5,
+          },
+        },
+      },
+    });
+    return { success: true, user: newUser };
 };
 
 

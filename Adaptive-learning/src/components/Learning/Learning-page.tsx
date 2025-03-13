@@ -25,6 +25,7 @@ const getRandomColor = () => {
 export default function LearningPage() {
   const navigate = useNavigate();
   const [selectedContent, setSelectedContent] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState("");
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -53,13 +54,12 @@ export default function LearningPage() {
 
     setLoading(true);
     setModalOpen(true);
-    setSimplifiedText(""); // Clear previous data
+    setSimplifiedText("");
 
     try {
       const response = await axios.post("http://127.0.0.1:5001/api/text-classification/simplify", {
         text: selectedText,
       });
-      console.log(response.data.simplifiedText);
       setSimplifiedText(response.data.simplifiedText);
     } catch (error) {
       setSimplifiedText("Error fetching explanation. Please try again.");
@@ -94,7 +94,13 @@ export default function LearningPage() {
             <List>
               {topics.map((topic, index) => (
                 <motion.div key={index} whileHover={{ scale: 1.05 }}>
-                  <ListItem button onClick={() => setSelectedContent(topic.content)}>
+                  <ListItem 
+                    button 
+                    onClick={() => {
+                      setSelectedContent(topic.content);
+                      setSelectedTopic(topic.title);
+                    }}
+                  >
                     <Box
                       sx={{
                         width: 8,
@@ -119,22 +125,52 @@ export default function LearningPage() {
         <Grid item xs={9} display="flex" justifyContent="center" alignItems="start" mt={10}>
           <Box sx={{ borderRadius: 2, overflow: "hidden", p: 3 }}>
             {selectedContent ? (
-              <Box>
-                <div dangerouslySetInnerHTML={{ __html: selectedContent }} />
-                <Button
-                  variant="contained"
-                  color="secondary"
+              <>
+                <Box>
+                  <div dangerouslySetInnerHTML={{ __html: selectedContent }} />
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{
+                      position: "fixed",
+                      right: "5%",
+                      top: "15%",
+                      transform: "translateY(-50%)",
+                    }}
+                    onClick={simplifyContent}
+                  >
+                    Simplify ✨
+                  </Button>
+                </Box>
+
+                {/* 🎯 Quiz Section (Newly Added) */}
+                <Box
                   sx={{
-                    position: "fixed",
-                    right: "5%",
-                    top: "15%",
-                    transform: "translateY(-50%)",
+                    mt: 5,
+                    p: 3,
+                    borderRadius: 2,
+                    bgcolor: "#1E1E2F",
+                    color: "white",
+                    textAlign: "center",
+                    boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.2)",
                   }}
-                  onClick={simplifyContent}
                 >
-                  Simplify ✨
-                </Button>
-              </Box>
+                  <Typography variant="h5" fontWeight="bold">
+                    "Knowledge is power, but learning to apply it is wisdom." 💡
+                  </Typography>
+                  <Typography variant="body1" sx={{ mt: 2 }}>
+                    Ready to test what you just learned about <b>{selectedTopic}</b>?  
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2, px: 5 }}
+                    onClick={() => navigate(`/quiz/${selectedTopic}`)}
+                  >
+                    Start Quiz 🎯
+                  </Button>
+                </Box>
+              </>
             ) : (
               <Typography variant="h6" color="gray" textAlign="center">
                 Select a topic to view details

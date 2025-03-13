@@ -21,6 +21,31 @@ model User {
   courses  CourseEnrollment[]
   videos   VideoWatch[]
   quizzes  QuizAttempt[]
+  learningTrack   LearningTrack?
+}
+
+model LearningTrack {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalAttempts          Int      @default(0)
+  correctAnswers         Int      @default(0)
+  accuracy              Float     @default(0.0)
+  lastDifficultyLabel    Int      @default(0) // 0 = Easy, 1 = Medium, 2 = Hard
+
+  // Topic Flags (Binary - Either 0 or 1)
+  topicJavaBasics        Int      @default(0)
+  topicJavaCollections   Int      @default(0)
+  topicJavaExceptions    Int      @default(0)
+  topicJavaMultithreading Int     @default(0)
+  topicJavaOOP           Int      @default(0)
+
+  // Topic Proficiency (Float Values)
+  javaBasics            Float     @default(0.5)
+  javaOOP              Float     @default(0.5)
+  javaMultithreading   Float     @default(0.5)
+  javaExceptions       Float     @default(0.5)
+  javaCollections      Float     @default(0.5)
 }
 
 model Course {
