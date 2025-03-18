@@ -10,6 +10,8 @@ import {
   Quiz,
   QuizAttempt,
   FeedbackReport,
+  LearningTrack,
+  QuizQuestionDTO,
 } from "../types";
 
 const baseurl = import.meta.env.VITE_SERVER_URL;
@@ -143,6 +145,22 @@ export const api = createApi({
           body,
       })
     }),
+
+     // Learning Report
+  getlearningReport: builder.query<LearningTrack[], {userId : string}>({
+    query: ({userId}) => `/users/learningTrack/${userId}`,
+  }),
+
+
+  // Get Quiz Questions 
+
+  getQuizQuestions: builder.query<QuizQuestionDTO[], { topic: string; userId: string }>({
+    query: ({ topic, userId }) => ({
+      url: `/questions/${topic}`,
+      method: 'POST',
+      body: { userId }, 
+    }),
+  }),  
   }),
 });
 
@@ -171,5 +189,9 @@ export const {
 
   useSubmitFeedbackReportMutation,
   useGetFeedbackReportsQuery,
- useGetModalFeedbackReportsMutation
+ useGetModalFeedbackReportsMutation,
+
+  useGetlearningReportQuery,
+
+  useGetQuizQuestionsQuery,
 } = api;

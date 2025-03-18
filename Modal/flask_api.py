@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)  
 
 
-model = pickle.load(open("Trained_modal/student_model.pkl", "rb"))
+model = pickle.load(open("Modal/Trained_modal/student_model.pkl", "rb"))
 
 
 @app.route('/predict_feedback', methods=['POST'])
@@ -46,4 +46,4 @@ def predict_feedback():
 
 # Run Flask App
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

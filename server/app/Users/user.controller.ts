@@ -21,3 +21,9 @@ export const getEnrolledCourses = async (req : Request, res: Response) => {
 export const logoutUser = async (req : Request, res: Response) => {
     res.send(CreateResponse({}, "User logged out successfully"))
 }
+
+export const getLearningTrack = async (req : Request, res: Response) => {
+    const { userId } = req.params;
+    const learningTrack = await userServices.getLearningTrack(userId);
+    res.send(CreateResponse(learningTrack, "User's learning track retrieved successfully"))
+}

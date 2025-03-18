@@ -22,6 +22,7 @@ model User {
   videos   VideoWatch[]
   quizzes  QuizAttempt[]
   learningTrack   LearningTrack?
+  learningProgress UserProgress[]
 }
 
 model LearningTrack {
@@ -126,4 +127,29 @@ model Topic {
   title     String   @db.VarChar(255)
   content   String
   createdAt DateTime @default(now())
+  userProgress UserProgress[]
+}
+
+model Question {
+  id         Int      @id @default(autoincrement())
+  topic      String
+  question   String
+  options    String   // Store as JSON string
+  answer     String
+  difficulty String
+}
+
+
+model UserProgress {
+  id          String  @id @default(uuid())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  topic       Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+
+  
+  videoWatchTime Int  @default(0)  // Total video watch time in minutes
+  quizzesAttempted Int @default(0) // Total quizzes attempted
+  correctAnswers  Int  @default(0) // Correct answers count
+  accuracy       Float @default(0.0) // Accuracy percentage
 }

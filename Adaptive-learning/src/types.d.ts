@@ -75,3 +75,33 @@ export interface ApiResponse<T> {
      questionId: number;
    }
    
+   // Learning Track Model
+   export interface LearningTrack {
+      id: string;
+      userId: string;
+      totalAttempts: number;
+      correctAnswers: number;
+      accuracy: number;
+      lastDifficultyLabel: number;
+      topicJavaBasics: number;
+      topicJavaCollections: number;
+      topicJavaExceptions: number;
+      topicJavaMultithreading: number;
+      topicJavaOOP: number;
+      javaBasics: number;
+      javaOOP: number;
+      javaMultithreading: number;
+      javaExceptions: number;
+      javaCollections: number;
+   }
+
+
+// quizQuestionDTO
+export interface QuizQuestionDTO {
+  id: string;
+  question_text: string;
+  options: string[];
+  correct_answer: string;
+  difficulty: string;
+  topic: string;
+}

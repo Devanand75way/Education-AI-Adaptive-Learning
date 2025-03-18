@@ -5,8 +5,54 @@ import {
 import { motion } from "framer-motion";
 import { Navbar } from "../Hero-Section/Hero-section";
 import { useAppSelector } from "../../store/store";
-import { useGetFeedbackReportsQuery, useGetModalFeedbackReportsMutation } from "../../services/api";
+import { useGetFeedbackReportsQuery, useGetlearningReportQuery, useGetModalFeedbackReportsMutation } from "../../services/api";
 
+import { Radar, Bar } from "react-chartjs-2";
+import { Chart as ChartJS, RadialLinearScale, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
+
+ChartJS.register(RadialLinearScale, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+const radarChartData = {
+  labels: ["Attempts", "Correct Answers", "Accuracy", "Avg Time Spent", "Difficulty Level"],
+  datasets: [
+    {
+      label: "Learning Performance",
+      data: [
+        "40",
+        "20",
+        "50%",
+        "10m",
+        "Medium",
+      ],
+      backgroundColor: "rgba(54, 162, 235, 0.2)",
+      borderColor: "rgba(54, 162, 235, 1)",
+      borderWidth: 2,
+    },
+  ],
+};
+
+const barChartData = {
+  labels: ["Java Basics", "Java Collections", "Java Exceptions", "Java Multithreading", "Java OOP"],  // ✅ Wrap in an array
+  datasets: [
+    {
+      label: "Attempts per Topic",
+      data: [5, 8, 4, 6, 7],
+      backgroundColor: "rgba(255, 99, 132, 0.5)",
+      borderColor: "rgba(255, 99, 132, 1)",
+      borderWidth: 1,
+    },
+  ],
+};
+
+
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+    },
+  },
+};
 const MotionBox = motion(Box);
 
 
@@ -72,6 +118,9 @@ const ViewCoursesPage: React.FC = () => {
       console.error("Failed to submit feedback report: ", error);
     }
   };
+  // const userId = localStorage.getItem('userId');
+  const {data} = useGetlearningReportQuery(userId);
+  console.log(data);
 
   return (
     <>
@@ -173,7 +222,28 @@ const ViewCoursesPage: React.FC = () => {
             </Table>
           </TableContainer>
         </MotionBox>
-      </Container>
+
+       {/* Radar Chart - Learning Performance */}
+    <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 3 }}>
+        <Typography variant="h6" fontWeight="bold" textAlign="center" gutterBottom>
+          Learning Performance (Radar Chart)
+        </Typography>
+        <Radar data={radarChartData} options={chartOptions} />
+      </Paper>
+    </MotionBox>
+
+    {/* Bar Graph - Attempts per Topic */}
+    <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 3 }}>
+        <Typography variant="h6" fontWeight="bold" textAlign="center" gutterBottom>
+          Attempts per Topic (Bar Graph)
+        </Typography>
+        <Bar data={barChartData} options={chartOptions} />
+      </Paper>
+    </MotionBox>
+    </Container>
+
 
       {/* Feedback Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>

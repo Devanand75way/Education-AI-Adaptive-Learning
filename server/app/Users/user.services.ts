@@ -73,3 +73,14 @@ export const getEnrolledCourses = async (userId: string) => {
 
   return enrolledCourses;
 };
+
+
+export const getLearningTrack = async (userId: string) => {
+  const learningTrack = await prisma.learningTrack.findUnique({
+    where: {
+      userId: userId,
+    },
+  });
+
+  return learningTrack;
+}

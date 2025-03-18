@@ -12,6 +12,7 @@ import videoWatched from "../Video-Watch/videowatch.routes"
 import QuizAttempt from "../Quiz-attempt/quiz.attempt.routes"
 import topic from "../Topics/topic.routes"
 import textSimplify from "../text-classification/text.classify.routes"
+import Questions from "../questions/question.routes"
 
 router.use("/course-enrollment" ,courseEnrollment)
 router.use("/courses" , Courses)
@@ -23,6 +24,7 @@ router.use("/video-watch" , videoWatched)
 router.use("/quiz-attempt" , QuizAttempt)
 router.use("/topic" ,topic)
 router.use("/text-classification" , textSimplify)
+router.use("/questions" , Questions)
 
 
 export default router;
